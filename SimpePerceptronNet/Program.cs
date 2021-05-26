@@ -19,48 +19,24 @@ namespace NeuronNet
             for (int i = 0; i < b.Length; i++) c[i] = Convert.ToDouble(b[i]);
             return c;
         }
-        public static double mp(int[] a, double[] b)
-        {
-            var sum = new double();
-            for (int i = 0; i < a.Length; i++) sum += a[i] * b[i];
-            return sum;
-        }
-        public static double mp(double[] a, double[,] b, int neuron)
-        {
-            var sum = new double();
-            for (int i = 0; i < a.Length; i++) sum += a[i] * b[neuron, i];
-            return sum;
-        }
         public static double[] smp(double[] a, double[] b)
         {
             var c = new double[a.Length];
             for (int i = 0; i < a.Length; i++) c[i] = a[i] * b[i];
             return c;
         }
-        public static double[] smin(double[] a, double[] b)
-        {
-            for (int i = 0; i < a.Length; i++) a[i] -= b[i];
-            return a;
-        }
         public static double[,] nw(double[] a, double[] b)
         {
             var c = new double[a.Length, b.Length];
+
             for (int i = 0; i < a.Length; i++)
-            {
-                for (int j = 0; j < b.Length; j++)
-                {
-                    c[i, j] = a[i] * b[j];
-                }
-            }
+                for (int j = 0; j < b.Length; j++) c[i, j] = a[i] * b[j];
             return c;
         }
         public static double[] sigma(double[] z)
         {
             var r = new double[z.Length];
-            for (int b = 0; b < z.Length; b++)
-            {
-                r[b] = 1.0d / (1.0d + Exp(-z[b]));
-            }
+            for (int b = 0; b < z.Length; b++) r[b] = 1.0d / (1.0d + Exp(-z[b]));
             return r;
         }
         public static double[] cd(double[] a, int[] b)
@@ -79,25 +55,14 @@ namespace NeuronNet
         {
             var b = new double[a.GetLength(1), a.GetLength(0)];
             for (int i = 0; i < a.GetLength(0); i++)
-            {
-                for (int j = 0; j < a.GetLength(1); j++)
-                {
-                    b[j, i] = a[i, j];
-                }
-            }
+                for (int j = 0; j < a.GetLength(1); j++) b[j, i] = a[i, j];
             return b;
         }
         public static double[] Vector(double[,] a, double[] b)
         {
             var c = new double[a.GetLength(0)];
             for (int i = 0; i < a.GetLength(0); i++)
-            {
-                for (int j = 0; j < a.GetLength(1); j++)
-                {
-                    c[i] += a[i, j] * b[j];
-                }
-            }
-
+                for (int j = 0; j < a.GetLength(1); j++) c[i] += a[i, j] * b[j];
             return c;
         }
         public static double[] imp(double[] a, double[] b)
@@ -110,12 +75,7 @@ namespace NeuronNet
         {
             var c = new double[a.GetLength(0), a.GetLength(1)];
             for (int i = 0; i < a.GetLength(0); i++)
-            {
-                for (int j = 0; j < a.GetLength(1); j++)
-                {
-                    c[i, j] = a[i, j] + b[i, j];
-                }
-            }
+                for (int j = 0; j < a.GetLength(1); j++) c[i, j] = a[i, j] + b[i, j];
             return c;
         }
     }
@@ -135,19 +95,12 @@ namespace NeuronNet
             string[] paths = Directory.GetFiles(dir);
             foreach (string path in paths)
             {
-
                 Bitmap bmp = new Bitmap(path);
                 var bitmap = new int[bmp.Height * bmp.Width];
                 for (int y = 0; y < bmp.Height; y++)
-                {
                     for (int x = 0; x < bmp.Width; x++)
-                    {
-                        Color pix_color = bmp.GetPixel(x, y);
-                        bitmap[y * bmp.Width + x] = (pix_color.R + pix_color.G + pix_color.B) > 0 ? 0 : 1;
-                    }
-                }
-                Samples smpl = new Samples();
-                smpl.bitmap = bitmap;
+                        bitmap[y * bmp.Width + x] = bmp.GetPixel(x, y).R > 0 ? 0 : 1;
+                Samples smpl = new Samples{ bitmap = bitmap };
                 string ltr = path.Split('_')[1].Split('.')[0];
                 int index = Char.ToLower(ltr[0]) - 97;
                 var arr = new int[26];
@@ -157,15 +110,8 @@ namespace NeuronNet
             }
         }
 
-
-        public List<Samples> ToBatch(int index, int count)
-        {
-            return this.samples.GetRange(index, count).ToList();
-        }
-        public void Shuffle()
-        {
-            this.samples = this.samples.OrderBy(i => Guid.NewGuid()).ToList();
-        }
+        public List<Samples> ToBatch(int index, int count) { return this.samples.GetRange(index, count).ToList(); }
+        public void Shuffle() { this.samples = this.samples.OrderBy(i => Guid.NewGuid()).ToList(); }
         public int GetLength() { return samples.Count; }
 
     }
@@ -182,29 +128,22 @@ namespace NeuronNet
         public double[] z;
         public Layer(int[] sizes, int num)
         {
-            if (true)
+            Random r = new Random();
+            double min = -1.1;
+            double max = 1.1;
+            activations = new double[sizes[num]];
+            biases = new double[sizes[num]];
+            nb = new double[sizes[num]];
+            for (int b = 0; b < biases.Length; b++) biases[b] = r.NextDouble() * (max - min) + min;
+            if (num > 0)
             {
-                Random r = new Random();
-                double MIN_VALUE = -1.1;
-                double MAX_VALUE = 1.1;
-                activations = new double[sizes[num]];
-                biases = new double[sizes[num]];
-                nb = new double[sizes[num]];
-                for (int b = 0; b < biases.Length; b++) biases[b] = r.NextDouble() * (MAX_VALUE - MIN_VALUE) + MIN_VALUE;
-                if (num > 0)
-                {
-                    weights = new double[sizes[num], sizes[num - 1]];
-                    for (int w0 = 0; w0 < weights.GetLength(0); w0++)
-                    {
-                        for (int w1 = 0; w1 < weights.GetLength(1); w1++)
-                        {
-                            weights[w0, w1] = r.NextDouble() * (MAX_VALUE - MIN_VALUE) + MIN_VALUE;
-                        }
-                    }
-                }
-                else weights = null;
-                nw = weights;
+                weights = new double[sizes[num], sizes[num - 1]];
+                for (int w0 = 0; w0 < weights.GetLength(0); w0++)
+                    for (int w1 = 0; w1 < weights.GetLength(1); w1++)
+                        weights[w0, w1] = r.NextDouble() * (max - min) + min;
             }
+            else weights = null;
+            nw = weights;
         }
 
         public void NbZero()
@@ -224,16 +163,10 @@ namespace NeuronNet
         public void Mprov(int size, double lr)
         {
             for (int i = 0; i < this.weights.GetLength(0); i++)
-            {
                 for (int j = 0; j < this.weights.GetLength(1); j++)
-                {
                     weights[i, j] = weights[i, j] - (lr / size) * nw[i, j];
-                }
-            }
             for (int k = 0; k < this.biases.Length; k++)
-            {
                 biases[k] -= (double)(lr / size * nb[k]);
-            }
         }
     }
 
@@ -280,8 +213,7 @@ namespace NeuronNet
             this.layers[0].activations = Misc.ToDouble(bitmap);
             for (int l = 1; l < layers.Length; l++)
             {
-                var z = new double[this.layers[l].activations.Length];
-                z = Misc.imp(Misc.Vector(this.layers[l].weights, this.layers[l - 1].activations), this.layers[l].biases);
+                var z = Misc.imp(Misc.Vector(this.layers[l].weights, this.layers[l - 1].activations), this.layers[l].biases);
                 this.layers[l].activations = Misc.sigma(z);
                 this.layers[l].z = z;
             }
@@ -314,12 +246,9 @@ namespace NeuronNet
 
         public double[] predict(int[] data)
         {
-
             layers[0].activations = Misc.ToDouble(data);
             for (int l = 1; l < this.layers.Length; l++)
-            {
                 layers[l].activations = Misc.sigma(Misc.imp(Misc.Vector(this.layers[l].weights, this.layers[l - 1].activations), this.layers[l].biases));
-            }
             return layers[layers.Length - 1].activations;
         }
     }
@@ -327,12 +256,14 @@ namespace NeuronNet
 
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-            Network network = new Network(new int[] { 4096, 104, 26 });
-            network.batch_size = 10;
-            network.epochs = 300;
-            network.learning_rate = 0.2;
+            Network network = new Network(new int[] { 4096, 104, 26 })
+            {
+                batch_size = 10,
+                epochs = 300,
+                learning_rate = 0.2
+            };
             Data test = new Data(@"E:\Shit\DATASET\");
             network.Train(test, test);
             Console.ReadKey();
